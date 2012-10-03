@@ -1,14 +1,24 @@
 var gpg = require('./build/Release/gpg');
+var fs  = require('fs');
 
-var msg = {
-  "signature":"-----BEGIN PGP SIGNATURE-----\nVersion: GnuPG v2.0.19 (GNU/Linux)\n\niQEcBAABAgAGBQJQa3thAAoJEDwbhYFhTKBdrwsH/jK7rDbodKgZ1CNdKOjOmsWD\ntUC+brptZ+y78AwUPKusIv2t3HBcsecxmn8+dGXiXPLZQJ7cIDtAf8gf78/zHzHh\nnshii5qTYEeMGADTWlMbK9Kdi19t6N3GD6VHm1h2GLuOUi+vRx6WyZ8rPjkcoeR1\n6MGUHBuxPxMct0N+wKmzM+H+uabL3ysiYAyNpO1Q8m//aw/bqtvsydVsfjFAuzBW\nnOswdATDkDkQIl+maVsbrW0jJO6Dqp9RxjdKygObeIY7r8xWiqGdto2oV+4FFDQO\nOyU4jzhtDpGa+jeU8BGRnveiWQgn3Q0NBQnQmrt4rrbKcZAWbsEsfgkCFZhzqYI=\n=FGNI\n-----END PGP SIGNATURE-----",
-  "data":"patton\n"};
+
+// Test verification
+var msg = JSON.parse(fs.readFileSync('./msg.json', 'utf8'));
 
 var verify = function(msg){
-  if(gpg.verify(msg.signature, msg.data)) console.log("verified: success");
-  else                                    console.log("verified: failed");
-};
+  if(gpg.verify(msg.signature,msg.content))
+    console.log("verification success");
+  else
+    console.log("verification failure"); };
 
-verify(msg);
-msg.data = "foo";
-verify(msg);
+verify(msg);                    // should print success
+msg.content = "bar";            // change signed content
+verify(msg);                    // should print failure
+
+
+// Test decryption
+var cipher = fs.readFileSync('cipher.txt', 'utf8');
+
+var decrypted = gpg.decrypt(cipher);
+
+console.log('decrypted content is "'+decrypted+'"');
