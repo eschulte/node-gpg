@@ -1,6 +1,5 @@
 import Options                                       # -*- python -*-
-from os import popen, unlink, symlink, getcwd
-from os import name as platform
+from os import unlink, symlink, popen
 from os.path import exists
 
 srcdir = "."
@@ -19,5 +18,12 @@ def configure(conf):
 def build(bld):
   obj = bld.new_task_gen("cxx", "shlib", "node_addon")
   obj.target = "gpg"
-  obj.find_sources_in_dirs("src")
+  obj.source = "src/gpg.cc"
   obj.lib = ["gpgme", "assuan", "gpg-error"]
+
+def shutdown():
+  if Options.commands['clean']:
+    if exists('gpg.node'): unlink('gpg.node')
+  else:
+    if exists('build/default/gpg.node') and not exists('gpg.node'):
+      symlink('build/default/gpg.node', 'gpg.node')
