@@ -1,5 +1,7 @@
 #include <node.h>
+#include <node_buffer.h>
 #include <v8.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <gpgme.h>
 
@@ -68,11 +70,11 @@ Handle<Value>Verify(const Arguments& args) {
 // TODO: implement async version, rename this DecryptSync
 Handle<Value>Decrypt(const Arguments& args) {
   HandleScope scope;
-  
+
   gpgme_data_t CIPHER, PLAIN;
   char * plain;
   size_t amt;
-  
+
   try{
     if (args.Length() != 1)
       return ThrowException(Exception::TypeError(
@@ -90,18 +92,18 @@ Handle<Value>Decrypt(const Arguments& args) {
     // decrypt
     plain = gpgme_data_release_and_get_mem(PLAIN, &amt);
     plain[amt] = 0;
-    
+
     return scope.Close(String::New(plain));
   } catch(const char* s) {
     return ThrowException(Exception::Error(String::New(s))); } }
 
 Handle<Value>DecryptAndVerify(const Arguments& args) {
   HandleScope scope;
-  
+
   gpgme_data_t CIPHER, PLAIN;
   char * plain;
   size_t amt;
-  
+
   try{
     if (args.Length() != 1)
       return ThrowException(Exception::TypeError(
@@ -112,14 +114,14 @@ Handle<Value>DecryptAndVerify(const Arguments& args) {
         String::New("First argument must be a string (cipher data)")));
     String::Utf8Value signature(args[0]->ToString());
     str_to_data(&CIPHER, *signature);
-    
+
     bail(gpgme_data_new(&PLAIN), "memory to hold decrypted data");
     bail(gpgme_op_decrypt_verify(ctx, CIPHER, PLAIN), "decryption");
 
     // decrypt
     plain = gpgme_data_release_and_get_mem(PLAIN, &amt);
     plain[amt] = 0;
-    
+
     return scope.Close(String::New(plain));
   } catch(const char* s) {
     return ThrowException(Exception::Error(String::New(s))); } }
@@ -127,7 +129,7 @@ Handle<Value>DecryptAndVerify(const Arguments& args) {
 // TODO: add key objects, then have this take the key of the signer
 Handle<Value>Sign(const Arguments& args) {
   HandleScope scope;
-  
+
   gpgme_key_t key;
   gpgme_data_t PLAIN, SIG;
   char * sig;
@@ -153,19 +155,71 @@ Handle<Value>Sign(const Arguments& args) {
     gpgme_signers_clear(ctx);
     bail(gpgme_op_keylist_start(ctx, *pattern, 1), "searching keys");
     bail(gpgme_op_keylist_next(ctx, &key), "selecting first matched key");
+    bail(gpgme_op_keylist_end(ctx), "done listing keys");
     // print key identification
     // printf("key owned by '%s'\n",
     //        gpgme_key_get_string_attr(key, GPGME_ATTR_USERID, NULL, 0));
-    bail(gpgme_op_keylist_end(ctx), "done listing keys");
     gpgme_signers_add(ctx, key);
     bail(gpgme_data_new(&SIG), "memory to hold signature");
     bail(gpgme_op_sign(ctx, PLAIN, SIG, GPGME_SIG_MODE_DETACH), "signing");
 
     sig = gpgme_data_release_and_get_mem(SIG, &amt);
     sig[amt] = 0;
-    
+
     // sign the message
     return scope.Close(String::New(sig));
+  } catch(const char* s) {
+    return ThrowException(Exception::Error(String::New(s))); } }
+
+Handle<Value>Encrypt(const Arguments& args) {
+  HandleScope scope;
+
+  gpgme_key_t *rec;
+  gpgme_data_t PLAIN, CIPHER;
+  char * cipher;
+  size_t amt;
+  int i;
+
+  try{
+    if (args.Length() != 2)
+      return ThrowException(Exception::TypeError(
+        String::New("sign takes two arguments")));
+
+    // TODO: should take a list of keys
+    if (!args[0]->IsArray())
+      return ThrowException(Exception::TypeError(
+        String::New("First argument must be a list of recipient strings")));
+
+    if (!args[1]->IsString())
+      return ThrowException(Exception::TypeError(
+       String::New("Second argument must be a string of the data to encrypt")));
+    String::Utf8Value plain(args[1]->ToString());
+    str_to_data(&PLAIN, *plain);
+
+    // build the list of recipients
+    Local<Array> array = Local<Array>::Cast(args[0]);
+
+    // need to initialize rec to hold keys + NULL
+    rec = (gpgme_key_t*)malloc(sizeof(gpgme_key_t)*(array->Length() + 1));
+
+    for(i=0;i<array->Length();i++){
+      String::Utf8Value str(array->Get(i)->ToString());
+      bail(gpgme_op_keylist_start(ctx, *str, 1), "searching keys");
+      bail(gpgme_op_keylist_next(ctx, &rec[i]),
+           "selecting first matched key");
+      bail(gpgme_op_keylist_end(ctx), "done listing keys");
+    }
+    rec[i] = NULL;
+
+    // encrypt the message
+    bail(gpgme_data_new(&CIPHER), "memory to hold cipher text");
+    bail(gpgme_op_encrypt(ctx, rec, GPGME_ENCRYPT_NO_ENCRYPT_TO, PLAIN, CIPHER),
+         "encrypting");
+
+    cipher = gpgme_data_release_and_get_mem(CIPHER, &amt);
+    cipher[amt] = 0;
+
+    return scope.Close(String::New(cipher));
   } catch(const char* s) {
     return ThrowException(Exception::Error(String::New(s))); } }
 
@@ -182,6 +236,6 @@ extern "C" void init (Handle<Object> target) {
               FunctionTemplate::New(DecryptAndVerify)->GetFunction());
   target->Set(String::New("sign"),
               FunctionTemplate::New(Sign)->GetFunction());
-  // target->Set(String::New("encrypt"),
-  //             FunctionTemplate::New(Encrypt)->GetFunction());
+  target->Set(String::New("encrypt"),
+              FunctionTemplate::New(Encrypt)->GetFunction());
 }
