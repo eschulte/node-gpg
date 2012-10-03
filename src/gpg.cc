@@ -46,14 +46,7 @@ Handle<Value>Verify(const Arguments& args) {
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
 
-  try{  
-    /* setup */
-    init();
-
-    /* create context */
-    bail(gpgme_new(&ctx), "context creation");
-
-    /* parse arguments */
+  try{
     if (args.Length() != 2)
       return ThrowException(Exception::TypeError(
         String::New("verify takes two arguments")));
@@ -83,5 +76,7 @@ Handle<Value>Verify(const Arguments& args) {
 
 extern "C" void init (Handle<Object> target) {
     HandleScope scope;
+    init();
+    bail(gpgme_new(&ctx), "context creation");
     target->Set(String::New("verify"),
                 FunctionTemplate::New(Verify)->GetFunction()); }
