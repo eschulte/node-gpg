@@ -1,0 +1,18 @@
+{ "name": "gpg"
+, "description": "Bindings for GPG Gnu Privacy Guard"
+, "author": "Eric Schulte <eric.schulte@gmx.com>"
+, "version": "0.0.1"
+, "main": "./gpg"
+, "keywords":
+  [ "pgp"
+  , "gpg"
+  , "cryptography"
+  , "signature"
+  ]
+, "repository":
+  { "type": "git"
+  , "url": "git://github.com/eschulte/node-gpg.git"
+  }
+, "scripts": { "install": "node-waf configure clean build" }
+, "private": true
+}
