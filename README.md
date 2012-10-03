@@ -15,9 +15,7 @@ GNU GENERAL PUBLIC LICENSE v3, see the COPYING file in this directory.
 Installation
 ------------
 
-TODO (not yet submitted to npm).
-
-    npm install gpg
+    npm install gpgme
 
 Usage
 -----
