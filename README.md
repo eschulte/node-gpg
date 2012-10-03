@@ -1,8 +1,6 @@
 node-gpg
 ========
 
-Still incomplete...
-
 [GNU Privacy Guard](www.gnuph.org) (GPG) bindings for node.js
 supporting public key cryptography, encryption, decryption, signing
 and verification.  This is based off of the
@@ -12,22 +10,22 @@ its very good documentation for more information.
 Installation
 ------------
 
-Projected (not yet submitted).
+TODO (not yet submitted to npm).
 
     npm install gpg
 
 Usage
 -----
 
-* Projected (still in progress).
 * Also see the test.js file in this directory for example usage.
 * Currently uses JavaScript strings for all data input and output.
-  I've been testing using ASCII armor GPG output.
+* Uses ASCII Armor for all encrypted output.
 
 Require gpg and initialize a new context.
 
     var gpg = require('gpg');
 
+### Verify
 To verify a message with a signature.  First generate the signature
 which can be done with the following in the shell (the `-a` indicates
 ASCII armor output).
@@ -45,6 +43,7 @@ following (or run `node test.js`).
     else
       console.log("verification failure");
 
+### Decrypt
 To decrypt an encrypted message.  First generated encrypted content by
 running the following in a shell.
 
@@ -68,6 +67,7 @@ Then run the following (or run `node test.js`).
     var decrypted_and_verified = gpg.decryptAndVerify(signed_cipher);
     console.log('decrypted and verified content is "'+decrypted_and_verified+'"');
 
+### Sign
 To sign a message.  First write a JSON hash holding the data to
 encrypt and the name of the signatory (this name will be used by GPG
 to lookup the key).
@@ -81,3 +81,19 @@ Then run the following (or run `node test.js`).
     console.log('content "'+sign.content+
                 '" signed by "'+sign.signatory+
                 '" yields signature "'+signature+'"');
+
+### Encrypt
+To encrypt a message.  First write a JSON hash holding a list of the
+recipients and the message to encrypt.
+
+    echo '{"recipients":["Your Name"], "content":"foo\n"}' > encrypt.json
+
+Then run the following (or run `node test.js`).
+
+TODO
+----
+* add a context class to allow multiple simultaneous operations
+* add a key class to allow key management to take place on the JS side
+  of things
+* add support for asynchronous operations w/callbacks (gpgme should
+  make this straightforward)
