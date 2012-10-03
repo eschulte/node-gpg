@@ -74,9 +74,41 @@ Handle<Value>Verify(const Arguments& args) {
     return ThrowException(Exception::Error(String::New(s))); }
 }
 
+Handle<Value>Decrypt(const Arguments& args) {
+  HandleScope scope;
+
+  gpgme_data_t CIPHER, PLAIN;
+  std::string str;
+  
+  try{
+    if (args.Length() != 1)
+      return ThrowException(Exception::TypeError(
+        String::New("decrypt takes one argument")));
+
+    if (!args[0]->IsString())
+      return ThrowException(Exception::TypeError(
+        String::New("First argument is a string (cipher data)")));
+    String::Utf8Value signature(args[0]->ToString());
+    str_to_data(&CIPHER, *signature);
+
+    bail(gpgme_data_new(&PLAIN), "memory to hold decrypted data");
+    bail(gpgme_op_decrypt(ctx, CIPHER, PLAIN), "decryption");
+
+    // get the size of the PLAIN data
+    off_t length = gpgme_data_seek(PLAIN, SEEK_END, 0);
+    // TODO: ensure that this actually works
+    return scope.Close(String::New(gpgme_data_release_and_get_mem(PLAIN, (size_t* )length)));
+
+  } catch(const char* s) {
+    return ThrowException(Exception::Error(String::New(s))); }
+}
+
 extern "C" void init (Handle<Object> target) {
-    HandleScope scope;
-    init();
-    bail(gpgme_new(&ctx), "context creation");
-    target->Set(String::New("verify"),
-                FunctionTemplate::New(Verify)->GetFunction()); }
+  HandleScope scope;
+  init();
+  bail(gpgme_new(&ctx), "context creation");
+  target->Set(String::New("verify"),
+              FunctionTemplate::New(Verify)->GetFunction());
+  target->Set(String::New("decrypt"),
+              FunctionTemplate::New(Decrypt)->GetFunction());
+}

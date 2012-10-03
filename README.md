@@ -21,24 +21,25 @@ Usage
 
 Projected (still in progress).
 
+Also see the test.js file in this directory for example usage.
+
 Require gpg and initialize a new context.
 
     var gpg = require('gpg');
-    var context = gpg.Context();
 
 Verify a message with a signature.
 
-    var signature = '-----BEGIN PGP SIGNATURE---\n...';
-    var content = 'Lorem ipsum dolor sit amet, ...';
-    if (context.verify(signature, content))
+    var msg = {
+      "signature":"-----BEGIN PGP SIGNATURE-----...",
+      "data":"Lorem ipsum dolor sit amet, ..."};
+
+    if (gpg.verify(signature, content))
       console.log('signature is valid');
     else
       console.log('signature is in-valid');
 
 Decrypt an encrypted message.
 
-    var fs = require('fs');
-    
-    var data = context.decrypt('./data.gpg');
+    var data = gpg.decrypt('cipher text...');
 
     console.log('encrypted data:'+data);
