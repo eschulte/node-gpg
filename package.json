@@ -1,8 +1,8 @@
-{ "name": "gpg"
+{ "name": "gpgme"
 , "description": "Bindings for Gnu Privacy Guard"
 , "author": "Eric Schulte <eric.schulte@gmx.com>"
 , "version": "0.0.1"
-, "main": "./gpg.js"
+, "main": "./gpgme.js"
 , "keywords":
   [ "pgp"
   , "gpg"
@@ -12,12 +12,11 @@
   , "signature"
   , "verification"
   ]
-, "homepage": "https://github.com/eschulte/node-gpg"
-, "bugs": { "url": "https://github.com/eschulte/node-gpg/issues" }
+, "homepage": "https://github.com/eschulte/node-gpgme"
+, "bugs": { "url": "https://github.com/eschulte/node-gpgme/issues" }
 , "repository":
   { "type": "git"
-  , "url": "git://github.com/eschulte/node-gpg.git"
+  , "url": "git://github.com/eschulte/node-gpgme.git"
   }
 , "scripts": { "install": "node-waf configure clean build" }
-, "private": true
 }

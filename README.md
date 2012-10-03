@@ -28,7 +28,7 @@ Usage
 
 Require gpg and initialize a new context.
 
-    var gpg = require('gpg');
+    var gpg = require('gpgme');
 
 ### Verify
 To verify a message with a signature.  First generate the signature
