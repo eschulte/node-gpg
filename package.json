@@ -2,7 +2,7 @@
 , "description": "Bindings for Gnu Privacy Guard"
 , "author": "Eric Schulte <eric.schulte@gmx.com>"
 , "version": "0.0.1"
-, "main": "./gpg"
+, "main": "./gpg.js"
 , "keywords":
   [ "pgp"
   , "gpg"

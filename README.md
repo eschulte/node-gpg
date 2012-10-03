@@ -36,7 +36,7 @@ which can be done with the following in the shell (the `-a` indicates
 ASCII armor output).
 
     sig=$(echo foo|gpg --detach-sign -a|sed ':a;N;$!ba;s/\n/\\\\n/g')
-    echo "{\"content\":\"foo\\n\", \"signature\":\"$sig\"}" |tee msg.json
+    echo "{\"content\":\"foo\\\\n\", \"signature\":\"$sig\"}" |tee msg.json
 
 Then save your signature to a JavaScript string, and run the
 following (or run `node test.js`).

@@ -1,4 +1,4 @@
-var gpg = require('./build/Release/gpg');
+var gpg = require('./gpg');
 var fs  = require('fs');
 
 

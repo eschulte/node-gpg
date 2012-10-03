@@ -20,10 +20,3 @@ def build(bld):
   obj.target = "gpg"
   obj.source = "src/gpg.cc"
   obj.lib = ["gpgme", "assuan", "gpg-error"]
-
-def shutdown():
-  if Options.commands['clean']:
-    if exists('gpg.node'): unlink('gpg.node')
-  else:
-    if exists('build/default/gpg.node') and not exists('gpg.node'):
-      symlink('build/default/gpg.node', 'gpg.node')
