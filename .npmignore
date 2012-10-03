@@ -1,0 +1,10 @@
+build
+.lock-wscript
+gpg-*tgz
+
+# test files
+msg.json
+cipher.txt
+signed-cipher.txt
+sign.json
+encrypt.json

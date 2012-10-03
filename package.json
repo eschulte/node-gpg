@@ -12,6 +12,8 @@
   , "signature"
   , "verification"
   ]
+, "homepage": "https://github.com/eschulte/node-gpg"
+, "bugs": { "url": "https://github.com/eschulte/node-gpg/issues" }
 , "repository":
   { "type": "git"
   , "url": "git://github.com/eschulte/node-gpg.git"

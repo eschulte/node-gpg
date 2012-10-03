@@ -1,4 +1,4 @@
-import Options
+import Options                                       # -*- python -*-
 from os import popen, unlink, symlink, getcwd
 from os import name as platform
 from os.path import exists
@@ -13,6 +13,8 @@ def set_options(opt):
 def configure(conf):
   conf.check_tool("compiler_cxx")
   conf.check_tool("node_addon")
+  if not conf.check(lib="gpgme", mandatory=True):
+    conf.fatal("libgpgme required C library not found")
 
 def build(bld):
   obj = bld.new_task_gen("cxx", "shlib", "node_addon")
