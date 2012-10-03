@@ -61,12 +61,14 @@ Handle<Value>Verify(const Arguments& args) {
   if (!args[0]->IsString())
     return ThrowException(Exception::TypeError(
       String::New("First argument is a string (signature)")));
-  str_to_data(&SIG, args[0].ToString());
+  String::Utf8Value signature(args[0]->ToString());
+  str_to_data(&SIG, *signature);
 
   if (!args[1]->IsString())
     return ThrowException(Exception::TypeError(
       String::New("Second argument is a string (data)")));
-  str_to_data(&DATA, args[1].ToString());
+  String::Utf8Value data(args[1]->ToString());
+  str_to_data(&DATA, *data);
 
   gpgme_op_verify(ctx, SIG, DATA, NULL);
 
