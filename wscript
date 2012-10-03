@@ -19,12 +19,3 @@ def build(bld):
   obj.target = "gpg"
   obj.find_sources_in_dirs("src")
   obj.lib = ["gpgme", "assuan", "gpg-error"]
-
-def shutdown(bld):
-  # HACK to get binding.node out of build directory.
-  # better way to do this?
-  if Options.commands['clean']:
-    if exists('gpg.node'): unlink('gpg.node')
-  else:
-    if exists('build/default/gpg.node') and not exists('gpg.node'):
-      symlink(getcwd()+'/build/default/gpg.node', 'gpg.node')
