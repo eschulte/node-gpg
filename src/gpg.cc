@@ -42,7 +42,6 @@ void str_to_data(gpgme_data_t *data, const char* string){
 Handle<Value>Verify(const Arguments& args) {
   HandleScope scope;
 
-  gpgme_ctx_t ctx;
   gpgme_data_t SIG, DATA;
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
