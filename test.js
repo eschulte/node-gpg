@@ -22,3 +22,11 @@ var cipher = fs.readFileSync('cipher.txt', 'utf8');
 var decrypted = gpg.decrypt(cipher);
 
 console.log('decrypted content is "'+decrypted+'"');
+
+
+// Test decryption and verification
+var signed_cipher = fs.readFileSync('signed-cipher.txt', 'utf8');
+
+var decrypted_and_verified = gpg.decryptAndVerify(signed_cipher);
+
+console.log('decrypted and verified content is "'+decrypted_and_verified+'"');

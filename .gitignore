@@ -5,3 +5,4 @@ gpg-*tgz
 # test files
 msg.json
 cipher.txt
+signed-cipher.txt

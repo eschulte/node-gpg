@@ -46,7 +46,7 @@ following (or run `node test.js`).
       console.log("verification failure");
 
 To decrypt an encrypted message.  First generated encrypted content by
-running the following in a shell
+running the following in a shell.
 
     echo "secret contents"|gpg -e -r "Your GPG Name" -a|tee cipher.txt
 
@@ -54,4 +54,16 @@ Then run the following (or run `node test.js`).
 
     var cipher = fs.readFileSync('cipher.txt', 'utf8');
     var decrypted = gpg.decrypt(cipher);
-    console.log('decrypted content is:'+decrypted);
+    console.log('decrypted content is "'+decrypted+'"');
+
+To decrypt and verify a message.  First generated encrypted content by
+running the following in a shell.
+
+    echo "secret signed contents"|gpg -s -e -r "Your GPG Name" -a \
+      |tee signed-cipher.txt
+    
+Then run the following (or run `node test.js`).
+
+    var signed_cipher = fs.readFileSync('signed-cipher.txt', 'utf8');
+    var decrypted_and_verified = gpg.decryptAndVerify(signed_cipher);
+    console.log('decrypted and verified content is "'+decrypted_and_verified+'"');

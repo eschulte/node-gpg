@@ -94,6 +94,35 @@ Handle<Value>Decrypt(const Arguments& args) {
   } catch(const char* s) {
     return ThrowException(Exception::Error(String::New(s))); } }
 
+Handle<Value>DecryptAndVerify(const Arguments& args) {
+  HandleScope scope;
+  
+  gpgme_data_t CIPHER, PLAIN;
+  char * plain;
+  size_t amt;
+  
+  try{
+    if (args.Length() != 1)
+      return ThrowException(Exception::TypeError(
+        String::New("decrypt takes one argument")));
+
+    if (!args[0]->IsString())
+      return ThrowException(Exception::TypeError(
+        String::New("First argument must be a string (cipher data)")));
+    String::Utf8Value signature(args[0]->ToString());
+    str_to_data(&CIPHER, *signature);
+    
+    bail(gpgme_data_new(&PLAIN), "memory to hold decrypted data");
+    bail(gpgme_op_decrypt_verify(ctx, CIPHER, PLAIN), "decryption");
+
+    // decrypt
+    plain = gpgme_data_release_and_get_mem(PLAIN, &amt);
+    plain[amt] = 0;
+    
+    return scope.Close(String::New(plain));
+  } catch(const char* s) {
+    return ThrowException(Exception::Error(String::New(s))); } }
+
 extern "C" void init (Handle<Object> target) {
   HandleScope scope;
   init();
@@ -101,4 +130,11 @@ extern "C" void init (Handle<Object> target) {
   target->Set(String::New("verify"),
               FunctionTemplate::New(Verify)->GetFunction());
   target->Set(String::New("decrypt"),
-              FunctionTemplate::New(Decrypt)->GetFunction()); }
+              FunctionTemplate::New(Decrypt)->GetFunction());
+  target->Set(String::New("decryptAndVerify"),
+              FunctionTemplate::New(DecryptAndVerify)->GetFunction());
+  // target->Set(String::New("sign"),
+  //             FunctionTemplate::New(Verify)->GetFunction());
+  // target->Set(String::New("encrypt"),
+  //             FunctionTemplate::New(Verify)->GetFunction());
+}
