@@ -21,25 +21,23 @@ using namespace node;
 gpgme_ctx_t ctx;
 
 void bail(gpgme_error_t err, const char * msg){
+  char buff[1024];
   if(err){
-    printf("%s: [error] %s\n", msg, gpgme_strerror(err));
-    exit(err); } }
+    sprintf(buff, "GPG %s error: %s", msg, gpgme_strerror(err));
+    throw(buff); }}
 
 void init(){
-  printf("initializing...\n");
   setlocale (LC_ALL, "");
   gpgme_check_version (NULL);
   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
   #ifdef LC_MESSAGES
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
   #endif
-  bail(gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP),
-       "Initializing the engine");
-}
+  bail(gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP), "engine init"); }
 
 void str_to_data(gpgme_data_t *data, const char* string){
   bail(gpgme_data_new_from_mem(data, string, strlen(string), 1),
-       "creating a data buffer from memory"); }
+       "in-memory data buffer creation"); }
 
 Handle<Value>Verify(const Arguments& args) {
   HandleScope scope;
@@ -49,47 +47,39 @@ Handle<Value>Verify(const Arguments& args) {
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
 
-  /* setup */
-  printf("initializing...\n");
-  init();
+  try{  
+    /* setup */
+    init();
 
-  /* create context */
-  printf("creating a context...\n");
-  bail(gpgme_new(&ctx), "Creating a context");
+    /* create context */
+    bail(gpgme_new(&ctx), "context creation");
 
-  /* parse arguments */
-  if (args.Length() != 2)
-    return ThrowException(Exception::TypeError(
-      String::New("verify takes two arguments")));
+    /* parse arguments */
+    if (args.Length() != 2)
+      return ThrowException(Exception::TypeError(
+        String::New("verify takes two arguments")));
 
-  if (!args[0]->IsString())
-    return ThrowException(Exception::TypeError(
-      String::New("First argument is a string (signature)")));
-  String::Utf8Value signature(args[0]->ToString());
-  printf("converting first argument to in-memory data...\n");
-  str_to_data(&SIG, *signature);
+    if (!args[0]->IsString())
+      return ThrowException(Exception::TypeError(
+        String::New("First argument is a string (signature)")));
+    String::Utf8Value signature(args[0]->ToString());
+    str_to_data(&SIG, *signature);
 
-  if (!args[1]->IsString())
-    return ThrowException(Exception::TypeError(
-      String::New("Second argument is a string (data)")));
-  String::Utf8Value data(args[1]->ToString());
-  printf("converting second argument to in-memory data...\n");
-  str_to_data(&DATA, *data);
+    if (!args[1]->IsString())
+      return ThrowException(Exception::TypeError(
+        String::New("Second argument is a string (data)")));
+    String::Utf8Value data(args[1]->ToString());
+    str_to_data(&DATA, *data);
 
-  printf("verifying signature...\n");
-  bail(gpgme_op_verify(ctx, SIG, DATA, NULL),
-       "verifying");
+    bail(gpgme_op_verify(ctx, SIG, DATA, NULL), "verification");
 
-  printf("getting result...\n");
-  result = gpgme_op_verify_result(ctx);
-  sig = result->signatures;
+    result = gpgme_op_verify_result(ctx);
+    sig = result->signatures;
 
-  printf("checking status...\n");
-  printf("status=%d\n", sig->status);
-
-  printf("returning...\n");
-  if(sig->status == GPG_ERR_NO_ERROR) return True();
-  else                                return False();
+    if(sig->status == GPG_ERR_NO_ERROR) return True();
+    else                                return False();
+  } catch(const char* s) {
+    return ThrowException(Exception::Error(String::New(s))); }
 }
 
 extern "C" void init (Handle<Object> target) {
