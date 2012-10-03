@@ -6,3 +6,4 @@ gpg-*tgz
 msg.json
 cipher.txt
 signed-cipher.txt
+sign.json

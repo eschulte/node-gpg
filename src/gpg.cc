@@ -23,6 +23,7 @@ void init(){
   #ifdef LC_MESSAGES
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
   #endif
+  // TODO: allow other versions to be specified
   bail(gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP), "engine init"); }
 
 void str_to_data(gpgme_data_t *data, const char* string){
@@ -123,18 +124,64 @@ Handle<Value>DecryptAndVerify(const Arguments& args) {
   } catch(const char* s) {
     return ThrowException(Exception::Error(String::New(s))); } }
 
+// TODO: add key objects, then have this take the key of the signer
+Handle<Value>Sign(const Arguments& args) {
+  HandleScope scope;
+  
+  gpgme_key_t key;
+  gpgme_data_t PLAIN, SIG;
+  char * sig;
+  size_t amt;
+
+  try{
+    if (args.Length() != 2)
+      return ThrowException(Exception::TypeError(
+        String::New("sign takes two arguments")));
+
+    if (!args[0]->IsString())
+      return ThrowException(Exception::TypeError(
+        String::New("First argument must be a string indicating the signer")));
+    String::Utf8Value pattern(args[0]->ToString());
+
+    if (!args[1]->IsString())
+      return ThrowException(Exception::TypeError(
+        String::New("Second argument must be a string of the data to sign")));
+    String::Utf8Value plain(args[1]->ToString());
+    str_to_data(&PLAIN, *plain);
+
+    // get the key of the signer
+    gpgme_signers_clear(ctx);
+    bail(gpgme_op_keylist_start(ctx, *pattern, 1), "searching keys");
+    bail(gpgme_op_keylist_next(ctx, &key), "selecting first matched key");
+    // print key identification
+    // printf("key owned by '%s'\n",
+    //        gpgme_key_get_string_attr(key, GPGME_ATTR_USERID, NULL, 0));
+    bail(gpgme_op_keylist_end(ctx), "done listing keys");
+    gpgme_signers_add(ctx, key);
+    bail(gpgme_data_new(&SIG), "memory to hold signature");
+    bail(gpgme_op_sign(ctx, PLAIN, SIG, GPGME_SIG_MODE_DETACH), "signing");
+
+    sig = gpgme_data_release_and_get_mem(SIG, &amt);
+    sig[amt] = 0;
+    
+    // sign the message
+    return scope.Close(String::New(sig));
+  } catch(const char* s) {
+    return ThrowException(Exception::Error(String::New(s))); } }
+
 extern "C" void init (Handle<Object> target) {
   HandleScope scope;
   init();
   bail(gpgme_new(&ctx), "context creation");
+  gpgme_set_armor(ctx, 1);
   target->Set(String::New("verify"),
               FunctionTemplate::New(Verify)->GetFunction());
   target->Set(String::New("decrypt"),
               FunctionTemplate::New(Decrypt)->GetFunction());
   target->Set(String::New("decryptAndVerify"),
               FunctionTemplate::New(DecryptAndVerify)->GetFunction());
-  // target->Set(String::New("sign"),
-  //             FunctionTemplate::New(Verify)->GetFunction());
+  target->Set(String::New("sign"),
+              FunctionTemplate::New(Sign)->GetFunction());
   // target->Set(String::New("encrypt"),
-  //             FunctionTemplate::New(Verify)->GetFunction());
+  //             FunctionTemplate::New(Encrypt)->GetFunction());
 }

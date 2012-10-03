@@ -67,3 +67,17 @@ Then run the following (or run `node test.js`).
     var signed_cipher = fs.readFileSync('signed-cipher.txt', 'utf8');
     var decrypted_and_verified = gpg.decryptAndVerify(signed_cipher);
     console.log('decrypted and verified content is "'+decrypted_and_verified+'"');
+
+To sign a message.  First write a JSON hash holding the data to
+encrypt and the name of the signatory (this name will be used by GPG
+to lookup the key).
+
+    echo '{"signatory":"Your Name", "content":"foo\n"}' > sign.json
+
+Then run the following (or run `node test.js`).
+
+    var sign = JSON.parse(fs.readFileSync('./sign.json', 'utf8'));
+    var signature = gpg.sign(sign.signatory, sign.content);
+    console.log('content "'+sign.content+
+                '" signed by "'+sign.signatory+
+                '" yields signature "'+signature+'"');

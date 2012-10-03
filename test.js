@@ -30,3 +30,13 @@ var signed_cipher = fs.readFileSync('signed-cipher.txt', 'utf8');
 var decrypted_and_verified = gpg.decryptAndVerify(signed_cipher);
 
 console.log('decrypted and verified content is "'+decrypted_and_verified+'"');
+
+
+// Test signing
+var sign = JSON.parse(fs.readFileSync('./sign.json', 'utf8'));
+
+var signature = gpg.sign(sign.signatory, sign.content);
+
+console.log('content "'+sign.content+
+            '" signed by "'+sign.signatory+
+            '" yields signature "'+signature+'"');
