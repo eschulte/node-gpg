@@ -7,6 +7,11 @@ and verification.  This is based off of the
 [GnuPG Made Easy](www.gnupg.org/gpgme.htlm) (GPGME) GPG C library, see
 its very good documentation for more information.
 
+License
+-------
+
+GNU GENERAL PUBLIC LICENSE v3, see the COPYING file in this directory.
+
 Installation
 ------------
 
